@@ -1,0 +1,52 @@
+name: Build Daikijin Store Portable
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.21.0
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build Python RPC
+        run: python python_rpc/setup.py build
+
+      - name: Copy OpenSSL DLLs
+        run: |
+          if (Test-Path "hydra-python-rpc/lib") {
+            cp hydra-python-rpc/lib/libcrypto-1_1.dll hydra-python-rpc/lib/libcrypto-1_1-x64.dll -ErrorAction SilentlyContinue
+            cp hydra-python-rpc/lib/libssl-1_1.dll hydra-python-rpc/lib/libssl-1_1-x64.dll -ErrorAction SilentlyContinue
+          }
+
+      - name: Build Daikijin Store Windows Portable
+        run: yarn build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Portable Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Daikijin-Store-Portable-Windows
+          path: dist/*.exe
