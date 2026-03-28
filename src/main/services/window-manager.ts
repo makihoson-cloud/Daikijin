@@ -697,7 +697,7 @@ export class WindowManager {
       tray.popUpContextMenu(contextMenu);
     };
 
-    tray.setToolTip("Hydra Launcher");
+    tray.setToolTip("Daikijin Store");
 
     if (process.platform === "win32") {
       await updateSystemTray();

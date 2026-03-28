@@ -318,6 +318,28 @@ export function App() {
     });
   }, [dispatch, draggingDisabled]);
 
+  // Branding replacement: replace Twitter/X links with Facebook, and Hydra text with Daikijin in dynamically injected elements
+  useEffect(() => {
+    const rebrand = () => {
+      // Replace Twitter/X links with Facebook
+      document.querySelectorAll('a[href*="x.com"], a[href*="twitter.com"]').forEach((el) => {
+        (el as HTMLAnchorElement).href = "https://www.facebook.com/profile.php?id=61575070498498";
+      });
+      // Replace Hydra text in dynamically injected elements (WorkWonders SDK, external resources)
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        if (node.nodeValue && node.nodeValue.includes("Hydra") && !node.parentElement?.closest("script, style")) {
+          node.nodeValue = node.nodeValue.replace(/Hydra/g, "Daikijin");
+        }
+      }
+    };
+    rebrand();
+    const observer = new MutationObserver(rebrand);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   const loadAndApplyTheme = useCallback(async () => {
     const allThemes = (await levelDBService.values("themes")) as {
       isActive?: boolean;

@@ -1,4 +1,5 @@
 import { downloadsSublevel } from "./level/sublevels/downloads";
+import { downloadSourcesSublevel } from "./level/sublevels/download-sources";
 import { orderBy } from "lodash-es";
 import { Downloader } from "@shared";
 import { levelKeys, db } from "./level";
@@ -59,6 +60,29 @@ export const loadState = async () => {
 
   if (process.platform === "linux") {
     DeckyPlugin.checkAndUpdateIfOutdated();
+  }
+
+  // Auto-add Xatab download source on first launch
+  try {
+    const existingSources = await downloadSourcesSublevel.values().all();
+    if (existingSources.length === 0) {
+      const xatabUrl = "https://hydralinks.cloud/sources/xatab.json";
+      const response = await fetch(xatabUrl);
+      const data = await response.json();
+      const id = crypto.randomUUID();
+      await downloadSourcesSublevel.put(id, {
+        id,
+        url: xatabUrl,
+        name: data.name || "Xatab",
+        etag: response.headers.get("etag") || null,
+        downloadCount: data.downloads?.length || 0,
+        status: "up-to-date",
+        fingerprint: "",
+      } as any);
+      logger.log("Auto-added Xatab download source");
+    }
+  } catch (err) {
+    logger.log("Failed to auto-add Xatab source:", String(err));
   }
 
   await HydraApi.setupApi().then(async () => {
