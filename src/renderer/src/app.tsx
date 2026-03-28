@@ -370,7 +370,7 @@ export function App() {
       {window.electron.platform === "win32" && (
         <div className="title-bar">
           <h4>
-            Hydra
+            Daikijin Store
             {hasActiveSubscription && (
               <span className="title-bar__cloud-text"> Cloud</span>
             )}
