@@ -1,62 +1,76 @@
 name: Build Daikijin Store Portable
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  build-windows:
-    runs-on: windows-2022
-
+  build:
+    strategy:
+      matrix:
+        os: [windows-2022, ubuntu-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
-
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
+          node-version: 22.21.0
       - name: Install dependencies
-        run: yarn install
-
+        run: yarn --frozen-lockfile
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.9
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
-
-      - name: Build Python RPC
+      - name: Build with cx_Freeze
         run: python python_rpc/setup.py build
-
       - name: Copy OpenSSL DLLs
+        if: matrix.os == 'windows-2022'
         run: |
-          if (Test-Path "hydra-python-rpc/lib/libcrypto-1_1.dll") {
-            cp hydra-python-rpc/lib/libcrypto-1_1.dll hydra-python-rpc/lib/libcrypto-1_1-x64.dll
-          }
-          if (Test-Path "hydra-python-rpc/lib/libssl-1_1.dll") {
-            cp hydra-python-rpc/lib/libssl-1_1.dll hydra-python-rpc/lib/libssl-1_1-x64.dll
-          }
-
-      - name: Build Windows Portable
-        run: yarn build:win
+          cp hydra-python-rpc/lib/libcrypto-1_1.dll hydra-python-rpc/lib/libcrypto-1_1-x64.dll
+          cp hydra-python-rpc/lib/libssl-1_1.dll hydra-python-rpc/lib/libssl-1_1-x64.dll
+      - name: Build Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: yarn build:linux
         env:
-          MAIN_VITE_API_URL: https://api.hydralauncher.gg
-          MAIN_VITE_AUTH_URL: https://auth.hydralauncher.gg
+          MAIN_VITE_API_URL: https://hydra-api-us-east-1.losbroxas.org
+          MAIN_VITE_AUTH_URL: https://auth.hydra.losbroxas.org
           MAIN_VITE_CHECKOUT_URL: https://checkout.hydralauncher.gg
           MAIN_VITE_WS_URL: wss://ws.hydralauncher.gg
-          MAIN_VITE_NIMBUS_API_URL: https://nimbus.hydralauncher.gg
-          RENDERER_VITE_EXTERNAL_RESOURCES_URL: https://resources.hydralauncher.gg
-          MAIN_VITE_EXTERNAL_RESOURCES_URL: https://resources.hydralauncher.gg
+          MAIN_VITE_NIMBUS_API_URL: https://api.hydranimbus.com
+          RENDERER_VITE_EXTERNAL_RESOURCES_URL: https://assets.hydralauncher.gg
+          MAIN_VITE_EXTERNAL_RESOURCES_URL: https://assets.hydralauncher.gg
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_ENV: production
-
-      - name: Upload Artifact
+      - name: Build Windows
+        if: matrix.os == 'windows-2022'
+        run: yarn build:win
+        env:
+          MAIN_VITE_API_URL: https://hydra-api-us-east-1.losbroxas.org
+          MAIN_VITE_AUTH_URL: https://auth.hydra.losbroxas.org
+          MAIN_VITE_CHECKOUT_URL: https://checkout.hydralauncher.gg
+          MAIN_VITE_WS_URL: wss://ws.hydralauncher.gg
+          MAIN_VITE_NIMBUS_API_URL: https://api.hydranimbus.com
+          RENDERER_VITE_EXTERNAL_RESOURCES_URL: https://assets.hydralauncher.gg
+          MAIN_VITE_EXTERNAL_RESOURCES_URL: https://assets.hydralauncher.gg
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Daikijin-Store-Portable-Windows
-          path: dist/*.exe
+          name: Build-${{ matrix.os }}
+          path: |
+            dist/*-portable.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/*.yml
+            dist/*.blockmap
+            dist/*.AppImage
