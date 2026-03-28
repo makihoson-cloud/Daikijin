@@ -327,7 +327,7 @@ export function App() {
     if (activeTheme?.code) {
       injectCustomCss(activeTheme.code);
     } else {
-      removeCustomCss();
+      injectCustomCss("https://hydrathemes.shop/themes/lumina/theme.css");
     }
   }, []);
 
