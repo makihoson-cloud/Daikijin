@@ -153,7 +153,7 @@ export function AchievementNotification() {
     if (activeTheme?.code) {
       injectCustomCss(activeTheme.code, shadowRootRef);
     } else {
-      removeCustomCss(shadowRootRef);
+      injectCustomCss("https://hydrathemes.shop/themes/lumina/theme.css", shadowRootRef);
     }
   }, [shadowRootRef]);
 
