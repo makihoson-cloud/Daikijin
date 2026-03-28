@@ -1,4 +1,4 @@
-appId: com.daikijin.store
+appId: gg.hydralauncher.hydra
 productName: Daikijin Store
 directories:
   buildResources: build
@@ -63,13 +63,13 @@ linux:
   maintainer: electronjs.org
   category: Game
   mimeTypes:
-    - x-scheme-handler/daikijinstore
+    - x-scheme-handler/hydralauncher
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
   provider: github
-  owner: makihoson-cloud
-  repo: Daikijin
+  owner: hydralauncher
+  repo: hydra
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
