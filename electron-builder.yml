@@ -1,5 +1,5 @@
-appId: gg.hydralauncher.hydra
-productName: Hydra
+appId: com.daikijin.store
+productName: Daikijin Store
 directories:
   buildResources: build
 extraResources:
@@ -20,7 +20,7 @@ asarUnpack:
   - node_modules/sharp/**
   - node_modules/@img/sharp-libvips-*/**
 win:
-  executableName: Hydra
+  executableName: DaikijinStore
   extraResources:
     - from: binaries/aria2c.exe
     - from: binaries/7z.exe
@@ -63,13 +63,13 @@ linux:
   maintainer: electronjs.org
   category: Game
   mimeTypes:
-    - x-scheme-handler/hydralauncher
+    - x-scheme-handler/daikijinstore
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
   provider: github
-  owner: hydralauncher
-  repo: hydra
+  owner: makihoson-cloud
+  repo: Daikijin
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
